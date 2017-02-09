@@ -6,13 +6,19 @@
  - [[#description][Description]]
  - [[#layer-installation][Layer Installation]]
    - [[#layer][Layer]]
+ - [[#backends][Backends]]
    - [[#eclim][Eclim]]
      - [[#installation][Installation]]
+       - [[#eclipse][Eclipse]]
+       - [[#eclim-1][Eclim]]
+     - [[#configuration][Configuration]]
      - [[#usage][Usage]]
-   - [[#ensime][Ensime]]
+   - [[#ensime][ENSIME]]
      - [[#installation-1][Installation]]
      - [[#usage-1][Usage]]
      - [[#issues][Issues]]
+   - [[#meghanada][Meghanada]]
+   - [[#jdee][JDEE]]
  - [[#key-bindings][Key bindings]]
    - [[#java-mode][Java-mode]]
      - [[#project-management][Project management]]
@@ -27,52 +33,94 @@
    - [[#projects-buffer][Projects buffer]]
 
 * Description
-This layer adds support for the Java language using the [[http://eclim.org][Eclim]] client/server by
-default, or alternatively the [[https://ensime.github.io/][Ensime]] client/server.
+This layer adds support for the Java language, it supports multiple backends:
+- the [[http://eclim.org][Eclim]] client/server (default),
+- the [[https://ensime.github.io/][ENSIME]] client/server,
+- the [[https://github.com/mopemope/meghanada-emacs][Meghanada]] client/server.
+- the [[https://github.com/jdee-emacs/jdee][JDEE]] package (work in progress)
 
 * Layer Installation
 ** Layer
 To use this configuration layer, add it to your =~/.spacemacs=. You will need to
 add =java= to the existing =dotspacemacs-configuration-layers= list in this
-file. To choose a backend explicitly,
-#+BEGIN_SRC elips
-java :variables java-backend 'eclim
+file.
+
+* Backends
+To choose a default backend set the layer variable =java-backend=:
+
+#+BEGIN_SRC elisp
+(java :variables java-backend 'eclim)
 #+END_SRC
+
+Backend can be chosen on a per project basis using directory local variables
+(files named =.dir-locals.el= at the root of a project), an example to use the
+=meghanada= backend:
+
+#+BEGIN_SRC elisp
+;;; Directory Local Variables
+;;; For more information see (info "(emacs) Directory Variables")
+
+((java-mode (java-backend . meghanada)))
+#+END_SRC
+
+*Note:* you can add a directory local variable with ~SPC f v d~.
 
 ** Eclim
 Eclim provides the ability to access Eclipse features such as code completion,
 searching, code validation, and many more.
 
 *** Installation
-For installation check the [[http://eclim.org/install.html#download][official page]].
+**** Eclipse
+First you need the last version of Eclispe from the [[https://www.eclipse.org/downloads/eclipse-packages/][official Eclipse site]].
 
-Then set the =Eclipse= and =Eclim= paths in =dotspacemacs/user-config=,
-for instance:
+*Note:* if you are on MacOS there some issues between the new native Eclipse
+application installed by the =Eclispe-install.app= wizard and the Eclim
+installer wizard. The recommended way to install Eclipse on MacOS is by using
+=homebrew= or by get the =tar.gz= compressed file instead. With homebrew
+the command line to install Eclipse is =brew cask install eclipse-jee=.
 
-#+BEGIN_SRC elisp
-  (setq eclim-eclipse-dirs '("~/opt/eclipse")
-        eclim-executable "~/opt/eclipse/eclim")
+**** Eclim
+For installation of Eclim check the [[http://eclim.org/install.html#download][official page]] to download the installer
+then double click on it or launch it in the command line with the following
+command (the example is for MacOS, replace the eclispe.home definition by
+your correct location as well as the current version of eclim):
+
+#+BEGIN_SRC shell
+$ java -Dvim.skip=true -Declipse.home=/Applications/Eclipse.app/Contents/Eclipse -jar eclim_2.6.0.jar install
 #+END_SRC
 
-You can also configure other options, as shown below:
+*** Configuration
+You may need to set the Eclipse and Eclim paths in your dotfile as layer
+variables or in the =dotspacemacs/user-config=, for instance on MacOS as layer
+variables:
 
-#+BEGIN_SRC elisp
-  (setq
-   ;; Use another eclimd executable
-   eclimd-executable "/path/to/another/executable"
-   ;; Specify the workspace to use by default
-   eclimd-default-workspace "/path/to/default/eclipse/workspace"
-   ;; Whether or not to block emacs until eclimd is ready
-   eclimd-wait-for-process t)
-#+END_SRC
+ #+BEGIN_SRC elisp
+(java :variables java-backend 'eclim
+                 eclim-eclipse-dirs '("/Applications/Eclipse.app/Contents/Eclipse/")
+                 eclim-executable "/Applications/Eclipse.app/Contents/Eclipse/eclim")
+ #+END_SRC
+
+You can also configure useful other options like the default location for the
+Eclim workspace (default value is =~/workspace=), as shown below:
+
+ #+BEGIN_SRC elisp
+   (setq
+    ;; Specify the workspace to use by default
+    eclimd-default-workspace "/path/to/default/eclipse/workspace"
+    ;; wether autostarting eclimd or not (default nil)
+    eclimd-autostart t
+    ;; Whether or not to block emacs until eclimd is ready (default nil)
+    eclimd-wait-for-process t)
+ #+END_SRC
 
 *** Usage
 Start the eclim daemon with ~SPC m d s~ and stop it with ~SPC m d k~. (See
 below.)
 
-** Ensime
-Another backend option is the Ensime server, which is a lot more responsive than
-Eclim. It uses the same keybinding setup as the scala layer.
+** ENSIME
+Another backend option is the ENSIME server, which is a lot more responsive than
+Eclim. ENSIME is originally made to work with Scala but it now works with plain
+Java projects as well, some calls it ENJIME.
 
 *** Installation
 Find it with your favourite package manager, eg:
@@ -81,8 +129,7 @@ Find it with your favourite package manager, eg:
 #+END_SRC
 or refer to [[http://www.scala-sbt.org/download.html][the sbt installation instructions]].
 
-You also need to follow [[https://ensime.github.io/build_tools/sbt/][the Ensime configuration
-instructions]] to run Ensime.
+You also need to follow [[https://ensime.github.io/build_tools/sbt/][the ENSIME configuration instructions]] to run ENSIME.
 
 To use the build functions under ~SPC m b~ you need to use version =0.13.5= or
 newer of =sbt=, and specify that in your project's =project/build.properties=.
@@ -93,9 +140,14 @@ For example,
 
 *** Usage
 Start the ensime server by running ~SPC SPC ensime~ or ~M-x ensime~.
+
 *** Issues
-Ensime is originally built for Scala, so support for java is not complete, in
+ENSIME is originally built for Scala, so support for java is not complete, in
 particular refactoring doesn't work.
+
+** TODO Meghanada
+
+** TODO JDEE
 
 * Key bindings
 ** Java-mode

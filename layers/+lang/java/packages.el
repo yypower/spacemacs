@@ -11,80 +11,33 @@
 
 (setq java-packages
       '(
+        company
         (company-emacs-eclim :toggle
                              (configuration-layer/package-usedp 'company))
         eclim
+        eldoc
         ensime
+        flycheck
+        flyspell
         ggtags
         gradle-mode
         groovy-imports
         groovy-mode
         helm-gtags
         (java-mode :location built-in)
+        (meghanada :toggle (not (version< emacs-version "25.1")))
         ))
+
+(defun java/post-init-company ()
+  (add-hook 'java-mode-local-vars-hook #'spacemacs//java-setup-company))
 
 (defun java/init-company-emacs-eclim ()
   (use-package company-emacs-eclim
-    :defer t
-    :init
-    (spacemacs|add-company-backends
-      :backends company-emacs-eclim
-      :modes java-mode)))
-
-(defun java/init-ensime ()
-  (use-package ensime
-    :defer t
-    :commands ensime-mode
-    :config
-    (progn
-      (setq ensime-startup-dirname (expand-file-name "ensime" spacemacs-cache-directory))
-      ;; key bindings
-      (spacemacs/ensime-configure-keybindings 'java-mode)
-      (evil-define-key 'insert ensime-mode-map
-        (kbd ".") 'spacemacs/ensime-completing-dot
-        (kbd "M-.") 'ensime-edit-definition
-        (kbd "M-,") 'ensime-pop-find-definition-stack)
-      (evil-define-key 'normal ensime-mode-map
-        (kbd "M-.") 'ensime-edit-definition
-        (kbd "M-,") 'ensime-pop-find-definition-stack)
-      (evil-define-key 'normal ensime-popup-buffer-map
-        (kbd "q") 'ensime-popup-buffer-quit-function)
-      (evil-define-key 'normal ensime-inspector-mode-map
-        (kbd "q") 'ensime-popup-buffer-quit-function)
-      (evil-define-key 'normal ensime-refactor-info-map
-        (kbd "q") 'spacemacs/ensime-refactor-cancel
-        (kbd "c") 'spacemacs/ensime-refactor-accept
-        (kbd "RET") 'spacemacs/ensime-refactor-accept)
-      (evil-define-key 'normal ensime-compile-result-map
-        (kbd "g") 'ensime-show-all-errors-and-warnings
-        (kbd "TAB") 'forward-button
-        (kbd "<backtab>") 'backward-button
-        (kbd "M-n") 'forward-button
-        (kbd "M-p") 'backward-button
-        (kbd "n") 'forward-button
-        (kbd "N") 'backward-button))))
-
-;; (defun java/post-init-ensime ()
-;;   (when (eq 'ensime java-backend)
-;;     (use-package ensime
-;;       :defer t
-;;       :init
-;;       (progn
-;;         (spacemacs//ensime-init 'java-mode t nil)
-;;         (when (configuration-layer/package-usedp 'company)
-;;           (push 'ensime-company company-backends-java-mode)))
-;;       :config
-;;       (progn
-;;         (spacemacs/ensime-configure-keybindings 'java-mode)))))
+    :defer t))
 
 (defun java/init-eclim ()
   (use-package eclim
     :defer t
-    :init
-    (progn
-      (add-hook 'java-mode-hook 'eclim-mode)
-      (add-to-list 'spacemacs-jump-handlers-java-mode
-                   'eclim-java-find-declaration))
     :config
     (progn
       (spacemacs|hide-lighter eclim-mode)
@@ -92,24 +45,21 @@
       (setq help-at-pt-display-when-idle t
             help-at-pt-timer-delay 0.1)
       (help-at-pt-set-timer)
-
       (add-to-list 'minor-mode-alist
                    '(eclim-mode (:eval (eclim-modeline-string))))
-
+      ;; key bindings
       (evil-define-key 'insert java-mode-map
-        (kbd ".") 'spacemacs/java-completing-dot
-        (kbd ":") 'spacemacs/java-completing-double-colon
+        (kbd ".") 'spacemacs/java-eclim-completing-dot
+        (kbd ":") 'spacemacs/java-eclim-completing-double-colon
         (kbd "M-.") 'eclim-java-find-declaration
         (kbd "M-,") 'pop-tag-mark
         (kbd "M-<mouse-3>") 'eclim-java-find-declaration
         (kbd "<mouse-8>") 'pop-tag-mark)
-
       (evil-define-key 'normal java-mode-map
         (kbd "M-.") 'eclim-java-find-declaration
         (kbd "M-,") 'pop-tag-mark
         (kbd "M-<mouse-3>") 'eclim-java-find-declaration
         (kbd "<mouse-8>") 'pop-tag-mark)
-
       (evil-define-key 'normal eclim-problems-mode-map
         (kbd "a") 'eclim-problems-show-all
         (kbd "e") 'eclim-problems-show-errors
@@ -119,7 +69,6 @@
         (kbd "f") 'eclim-problems-toggle-filefilter
         (kbd "c") 'eclim-problems-correct
         (kbd "RET") 'eclim-problems-open-current)
-
       (evil-define-key 'normal eclim-project-mode-map
         (kbd "N") 'eclim-project-create
         (kbd "m") 'eclim-project-mark-current
@@ -136,7 +85,6 @@
         (kbd "g") 'eclim-project-mode-refresh
         (kbd "R") 'eclim-project-rename
         (kbd "q") 'eclim-quit-window)
-
       (spacemacs/set-leader-keys-for-major-mode 'java-mode
         "ea" 'eclim-problems-show-all
         "eb" 'eclim-problems
@@ -192,18 +140,74 @@
 
         "tt" 'eclim-run-junit))))
 
+(defun java/post-init-eldoc ()
+  (add-hook 'java-mode-local-vars-hook #'spacemacs//java-setup-eldoc))
+
+(defun java/init-ensime ()
+  (use-package ensime
+    :defer t
+    :commands ensime-mode
+    :init
+    (progn
+      (setq ensime-startup-dirname (concat spacemacs-cache-directory "ensime/"))
+      (spacemacs/register-repl 'ensime 'ensime-inf-switch "ensime"))
+    :config
+    (progn
+      ;; key bindings
+      (spacemacs/ensime-configure-keybindings 'java-mode)
+      (evil-define-key 'insert ensime-mode-map
+        (kbd ".") 'spacemacs/ensime-completing-dot
+        (kbd "M-.") 'ensime-edit-definition
+        (kbd "M-,") 'ensime-pop-find-definition-stack)
+      (evil-define-key 'normal ensime-mode-map
+        (kbd "M-.") 'ensime-edit-definition
+        (kbd "M-,") 'ensime-pop-find-definition-stack)
+      (evil-define-key 'normal ensime-popup-buffer-map
+        (kbd "q") 'ensime-popup-buffer-quit-function)
+      (evil-define-key 'normal ensime-inspector-mode-map
+        (kbd "q") 'ensime-popup-buffer-quit-function)
+      (evil-define-key 'normal ensime-refactor-info-map
+        (kbd "q") 'spacemacs/ensime-refactor-cancel
+        (kbd "c") 'spacemacs/ensime-refactor-accept
+        (kbd "RET") 'spacemacs/ensime-refactor-accept)
+      (evil-define-key 'normal ensime-compile-result-map
+        (kbd "g") 'ensime-show-all-errors-and-warnings
+        (kbd "TAB") 'forward-button
+        (kbd "<backtab>") 'backward-button
+        (kbd "M-n") 'forward-button
+        (kbd "M-p") 'backward-button
+        (kbd "n") 'forward-button
+        (kbd "N") 'backward-button))))
+
+;; (defun java/post-init-ensime ()
+;;   (when (eq 'ensime java-backend)
+;;     (use-package ensime
+;;       :defer t
+;;       :init
+;;       (progn
+;;         (spacemacs//ensime-init 'java-mode t nil)
+;;         (when (configuration-layer/package-usedp 'company)
+;;           (push 'ensime-company company-backends-java-mode)))
+;;       :config
+;;       (progn
+;;         (spacemacs/ensime-configure-keybindings 'java-mode)))))
+
+(defun java/post-init-flycheck ()
+  (add-hook 'java-mode-local-vars-hook #'spacemacs//java-setup-flycheck))
+
+(defun java/post-init-flyspell ()
+  (add-hook 'java-mode-local-vars-hook #'spacemacs//java-setup-flyspell))
+
 (defun java/post-init-ggtags ()
   (add-hook 'java-mode-local-vars-hook #'spacemacs/ggtags-mode-enable))
 
 (defun java/init-gradle-mode ()
   (use-package gradle-mode
-    :defer t
-    ))
+    :defer t))
 
 (defun java/init-groovy-imports ()
   (use-package groovy-imports
-    :defer t
-    ))
+    :defer t))
 
 (defun java/init-groovy-mode ()
   (use-package groovy-mode
@@ -219,5 +223,17 @@
     :init
     (progn
       (add-hook 'java-mode-local-vars-hook #'spacemacs//java-setup-backend)
+      (put 'java-backend 'safe-local-variable 'symbolp)
       (spacemacs//java-define-command-prefixes))))
 
+(defun java/init-meghanada ()
+  (use-package meghanada
+    :defer t
+    :init
+    (progn
+      (setq meghanada-server-install-dir (concat spacemacs-cache-directory
+                                                 "meghanada/")
+            ;; let spacemacs handle company and flycheck itself
+            company-meghanada-prefix-length 1
+            meghanada-use-company nil
+            meghanada-use-flycheck nil))))
