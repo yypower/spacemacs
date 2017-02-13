@@ -26,6 +26,10 @@
 (defun scala/post-init-eldoc ()
   (add-hook 'scala-mode-hook #'spacemacs//java-setup-ensime-eldoc))
 
+(defun scala/pre-init-ensime ()
+  (spacemacs|use-package-add-hook ensime
+    :pre-config (add-to-list 'java--ensime-modes 'scala-mode)))
+
 (defun scala/post-init-ensime ()
   (use-package ensime
     :defer t
@@ -36,7 +40,6 @@
         (add-hook 'scala-mode-hook 'spacemacs//ensime-maybe-start)))
     :config
     (progn
-      (spacemacs/ensime-configure-keybindings 'scala-mode)
       ;; Enable Expand Region integration from Ensime.  Ignore load errors to
       ;; handle older Ensime versions gracefully.
       (when (configuration-layer/package-usedp 'expand-region)
