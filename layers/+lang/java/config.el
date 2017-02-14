@@ -13,7 +13,7 @@
 
 (spacemacs|define-jump-handlers java-mode)
 
-(defvar java-backend 'eclim
+(defvar java-backend 'meghanada
   "The backend to use for IDE features. Possible values are `eclim', `ensime'
 and `meghanada'.")
 

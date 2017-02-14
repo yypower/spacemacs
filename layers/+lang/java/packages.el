@@ -48,6 +48,71 @@
       (add-to-list 'minor-mode-alist
                    '(eclim-mode (:eval (eclim-modeline-string))))
       ;; key bindings
+      (dolist (prefix '(("ma" . "ant")
+                        ("mD" . "daemon")
+                        ("mg" . "goto")
+                        ("mh" . "help/doc")
+                        ("mi" . "issues")
+                        ("mm" . "maven")
+                        ("mp" . "project")
+                        ("mr" . "refactor")
+                        ("mt" . "test")))
+        (spacemacs/declare-prefix-for-mode
+         'java-mode (car prefix) (cdr prefix)))
+      (spacemacs/set-leader-keys-for-major-mode 'java-mode
+        "aa" 'eclim-ant-run
+        "ac" 'eclim-ant-clear-cache
+        "ar" 'eclim-ant-run
+        "av" 'eclim-ant-validate
+
+        "Dk" 'stop-eclimd
+        "Ds" 'start-eclimd
+
+        "ff" 'eclim-java-find-generic
+
+        "gt" 'eclim-java-find-type
+
+        "hc" 'eclim-java-call-hierarchy
+        "hh" 'eclim-java-show-documentation-for-current-element
+        "hi" 'eclim-java-hierarchy
+        "hu" 'eclim-java-find-references
+
+        "ia" 'eclim-problems-show-all
+        "ib" 'eclim-problems
+        "ic" 'eclim-problems-correct
+        "ie" 'eclim-problems-show-errors
+        "if" 'eclim-problems-toggle-filefilter
+        "in" 'eclim-problems-next-same-window
+        "io" 'eclim-problems-open
+        "ip" 'eclim-problems-previous-same-window
+        "iw" 'eclim-problems-show-warnings
+
+        "mi" 'spacemacs/java-maven-clean-install
+        "mI" 'spacemacs/java-maven-install
+        "mp" 'eclim-maven-lifecycle-phases
+        "mr" 'eclim-maven-run
+        "mR" 'eclim-maven-lifecycle-phase-run
+        "mt" 'spacemacs/java-maven-test
+
+        "pb" 'eclim-project-build
+        "pc" 'eclim-project-create
+        "pd" 'eclim-project-delete
+        "pg" 'eclim-project-goto
+        "pi" 'eclim-project-import
+        "pj" 'eclim-project-info-mode
+        "pk" 'eclim-project-close
+        "po" 'eclim-project-open
+        "pp" 'eclim-project-mode
+        "pu" 'eclim-project-update
+
+        "rc" 'eclim-java-constructor
+        "rg" 'eclim-java-generate-getter-and-setter
+        "rf" 'eclim-java-format
+        "ri" 'eclim-java-import-organize
+        "rj" 'eclim-java-implement
+        "rr" 'eclim-java-refactor-rename-symbol-at-point
+
+        "tt" 'eclim-run-junit)
       (evil-define-key 'insert java-mode-map
         (kbd ".") 'spacemacs/java-eclim-completing-dot
         (kbd ":") 'spacemacs/java-eclim-completing-double-colon
@@ -85,60 +150,7 @@
         (kbd "g") 'eclim-project-mode-refresh
         (kbd "R") 'eclim-project-rename
         (kbd "q") 'eclim-quit-window)
-      (spacemacs/set-leader-keys-for-major-mode 'java-mode
-        "ea" 'eclim-problems-show-all
-        "eb" 'eclim-problems
-        "ec" 'eclim-problems-correct
-        "ee" 'eclim-problems-show-errors
-        "ef" 'eclim-problems-toggle-filefilter
-        "en" 'eclim-problems-next-same-window
-        "eo" 'eclim-problems-open
-        "ep" 'eclim-problems-previous-same-window
-        "ew" 'eclim-problems-show-warnings
-
-        "ds" 'start-eclimd
-        "dk" 'stop-eclimd
-
-        "ff" 'eclim-java-find-generic
-
-        "gt" 'eclim-java-find-type
-
-        "rc" 'eclim-java-constructor
-        "rg" 'eclim-java-generate-getter-and-setter
-        "rf" 'eclim-java-format
-        "ri" 'eclim-java-import-organize
-        "rj" 'eclim-java-implement
-        "rr" 'eclim-java-refactor-rename-symbol-at-point
-
-        "hc" 'eclim-java-call-hierarchy
-        "hh" 'eclim-java-show-documentation-for-current-element
-        "hi" 'eclim-java-hierarchy
-        "hu" 'eclim-java-find-references
-
-        "mi" 'spacemacs/java-maven-clean-install
-        "mI" 'spacemacs/java-maven-install
-        "mp" 'eclim-maven-lifecycle-phases
-        "mr" 'eclim-maven-run
-        "mR" 'eclim-maven-lifecycle-phase-run
-        "mt" 'spacemacs/java-maven-test
-
-        "aa" 'eclim-ant-run
-        "ac" 'eclim-ant-clear-cache
-        "ar" 'eclim-ant-run
-        "av" 'eclim-ant-validate
-
-        "pb" 'eclim-project-build
-        "pc" 'eclim-project-create
-        "pd" 'eclim-project-delete
-        "pg" 'eclim-project-goto
-        "pi" 'eclim-project-import
-        "pj" 'eclim-project-info-mode
-        "pk" 'eclim-project-close
-        "po" 'eclim-project-open
-        "pp" 'eclim-project-mode
-        "pu" 'eclim-project-update
-
-        "tt" 'eclim-run-junit))))
+      )))
 
 (defun java/post-init-eldoc ()
   (add-hook 'java-mode-local-vars-hook #'spacemacs//java-setup-eldoc))
@@ -158,11 +170,11 @@
         (dolist (prefix '(("mb" . "build")
                           ("mc" . "check")
                           ("md" . "debug")
+                          ("mD" . "daemon")
                           ("me" . "errors")
                           ("mg" . "goto")
                           ("mh" . "docs")
                           ("mi" . "inspect")
-                          ("mn" . "ensime")
                           ("mr" . "refactor")
                           ("mt" . "test")
                           ("ms" . "repl")
@@ -194,6 +206,10 @@
           "ds"     'ensime-db-step
           "dt"     'ensime-db-backtrace
 
+          "Df"     'ensime-reload-open-files
+          "Dr"     'spacemacs/ensime-gen-and-restart
+          "Ds"     'ensime
+
           "ee"     'ensime-print-errors-at-point
           "el"     'ensime-show-all-errors-and-warnings
           "es"     'ensime-stacktrace-switch
@@ -210,10 +226,6 @@
           "ii"     'ensime-inspect-type-at-point
           "iI"     'ensime-inspect-type-at-point-other-frame
           "ip"     'ensime-inspect-project-package
-
-          "nF"     'ensime-reload-open-files
-          "ns"     'ensime
-          "nS"     'spacemacs/ensime-gen-and-restart
 
           "ra"     'ensime-refactor-add-type-annotation
           "rd"     'ensime-refactor-diff-inline-local
@@ -318,7 +330,46 @@
     (progn
       (setq meghanada-server-install-dir (concat spacemacs-cache-directory
                                                  "meghanada/")
-            ;; let spacemacs handle company and flycheck itself
             company-meghanada-prefix-length 1
+            ;; let spacemacs handle company and flycheck itself
             meghanada-use-company nil
-            meghanada-use-flycheck nil))))
+            meghanada-use-flycheck nil)
+      ;; key bindings
+      (dolist (prefix '(("mc" . "comppile")
+                        ("mD" . "daemon")
+                        ("mg" . "goto")
+                        ("mr" . "refactor")
+                        ("mt" . "test")
+                        ("mx" . "execute")))
+        (spacemacs/declare-prefix-for-mode
+         'java-mode (car prefix) (cdr prefix)))
+      (spacemacs/set-leader-keys-for-major-mode 'java-mode
+        "cb" 'meghanada-compile-file
+        "cc" 'meghanada-compile-project
+
+        "Dc" 'meghanada-client-direct-connect
+        "Dd" 'meghanada-client-disconnect
+        "Di" 'meghanada-install-server
+        "Dk" 'meghanada-server-kill
+        "Dl" 'meghanada-clear-cache
+        "Dp" 'meghanada-ping
+        "Dr" 'meghanada-restart
+        "Ds" 'meghanada-client-connect
+        "Du" 'meghanada-update-server
+        "Dv" 'meghanada-version
+
+        "gb" 'meghanada-back-jump
+
+        "=" 'meghanada-code-beautify
+        "ri" 'meghanada-optimize-import
+        "rI" 'meghanada-import-all
+
+        "ta" 'meghanada--run-junit
+        "tc" 'meghanada-run-junit-class
+        "tl" 'meghanada-run-junit-recent
+        "tt" 'meghanada-run-junit-test-case
+
+        ;; meghanada-switch-testcase
+        ;; meghanada-local-variable
+
+        "x:" 'meghanada-run-task))))
