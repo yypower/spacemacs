@@ -89,7 +89,7 @@ version the release note it displayed")
   (evil-set-initial-state 'spacemacs-buffer-mode 'motion))
 
 (defun spacemacs-buffer/insert-ascii-banner-centered (file)
-  (insert-string
+  (insert
    (with-temp-buffer
      (insert-file-contents file)
      (let ((banner-width 0))
